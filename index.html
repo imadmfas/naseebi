@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1A2B4A" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1520" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="نصيبي">
+<meta name="description" content="نصيبي — مستشارك الذكي قبل الزواج. تحليل نفسي واجتماعي معمّق للشباب العراقي.">
+<title>نصيبي — مستشارك قبل الزواج</title>
+<link rel="icon" type="image/png" href="icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   DESIGN TOKENS — ثلاثة أوضاع: فاتح / غامق / نظام
+══════════════════════════════════════════════════════ */
+:root {
+  --gold:#C8A96E; --gold-l:#E8C98E; --gold-d:#9A7A40;
+  --teal:#2E8B8B; --teal-l:#4AABAB;
+  --navy:#1A2B4A; --navy-l:#2A3F6A;
+  --success:#2E7D32; --warn:#E65100; --danger:#C62828;
+  --r:16px; --r-sm:10px; --r-lg:24px;
+  --trans:0.25s cubic-bezier(.4,0,.2,1);
+}
+/* Light */
+[data-theme="light"], :root {
+  --bg:#F7F4F0; --bg2:#EDE9E3;
+  --surf:rgba(255,255,255,0.85);
+  --surf2:rgba(255,255,255,0.6);
+  --border:rgba(200,169,110,0.2);
+  --border2:#E5E0D8;
+  --text:#1A2B4A; --text2:#6B7280; --text3:#9CA3AF;
+  --glass:rgba(255,255,255,0.55);
+  --glass-border:rgba(255,255,255,0.8);
+  --shadow:0 8px 32px rgba(26,43,74,0.12);
+  --shadow-sm:0 2px 12px rgba(26,43,74,0.08);
+  --nav-bg:rgba(247,244,240,0.92);
+  --input-bg:rgba(255,255,255,0.7);
+  --overlay:rgba(26,43,74,0.4);
+}
+/* Dark */
+[data-theme="dark"] {
+  --bg:#0D1520; --bg2:#121C2C;
+  --surf:rgba(26,37,53,0.85);
+  --surf2:rgba(30,45,65,0.6);
+  --border:rgba(200,169,110,0.15);
+  --border2:#1E2F44;
+  --text:#E8E0D5; --text2:#9CA3AF; --text3:#6B7280;
+  --glass:rgba(20,32,50,0.65);
+  --glass-border:rgba(200,169,110,0.2);
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+  --shadow-sm:0 2px 12px rgba(0,0,0,0.3);
+  --nav-bg:rgba(13,21,32,0.95);
+  --input-bg:rgba(20,32,50,0.7);
+  --overlay:rgba(0,0,0,0.6);
+}
+
+/* ══════════════════════════════════════════════════════
+   BASE
+══════════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{height:100%;background:var(--bg);}
+body{
+  height:100%;font-family:'Cairo',sans-serif;
+  background:var(--bg);color:var(--text);direction:rtl;
+  transition:background var(--trans),color var(--trans);
+  overflow:hidden;
+}
+#app{
+  height:100%;display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+  position:relative;overflow:hidden;
+}
+
+/* ══════════════════════════════════════════════════════
+   GLASSMORPHISM CARD
+══════════════════════════════════════════════════════ */
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--shadow);
+}
+.glass-sm{
+  background:var(--glass);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ══════════════════════════════════════════════════════
+   SCREENS
+══════════════════════════════════════════════════════ */
+.screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.35s ease,transform 0.35s ease;
+  transform:translateX(24px);
+  background:var(--bg);
+  overflow:hidden;
+}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.screen.exit{opacity:0;transform:translateX(-24px);}
+
+/* ══════════════════════════════════════════════════════
+   SCROLLABLE BODY — الجزء المهم لإصلاح الزر المتداخل
+══════════════════════════════════════════════════════ */
+.scroll-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+}
+/* ثابت في أسفل كل شاشة */
+.sticky-bottom{
+  flex-shrink:0;
+  padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+}
+
+/* ══════════════════════════════════════════════════════
+   SPLASH
+══════════════════════════════════════════════════════ */
+#splash{
+  justify-content:center;align-items:center;gap:18px;
+  background:linear-gradient(160deg,#0D1520 0%,#1A2B4A 50%,#1E4040 100%);
+}
+.splash-bg{position:absolute;inset:0;overflow:hidden;}
+.splash-orb{position:absolute;border-radius:50%;filter:blur(60px);animation:orbFloat 6s ease-in-out infinite;}
+.splash-orb:nth-child(1){width:300px;height:300px;background:rgba(200,169,110,0.15);top:-100px;right:-80px;animation-delay:0s;}
+.splash-orb:nth-child(2){width:200px;height:200px;background:rgba(46,139,139,0.1);bottom:-60px;left:-60px;animation-delay:3s;}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-20px) scale(1.05);}}
+.splash-content{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;}
+.splash-ring{
+  width:110px;height:110px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:50px;
+  box-shadow:0 0 0 20px rgba(200,169,110,0.1),0 0 60px rgba(200,169,110,0.4);
+  animation:sRing 2s ease-in-out infinite;
+}
+@keyframes sRing{0%,100%{box-shadow:0 0 0 20px rgba(200,169,110,0.1),0 0 60px rgba(200,169,110,0.4);}
+50%{box-shadow:0 0 0 30px rgba(200,169,110,0.05),0 0 80px rgba(200,169,110,0.6);}}
+.splash-title{font-size:48px;font-weight:900;color:var(--gold);letter-spacing:3px;animation:fadeUp .8s ease .3s both;}
+.splash-sub{font-size:14px;color:rgba(255,255,255,0.55);animation:fadeUp .8s ease .6s both;}
+.splash-loader{width:36px;height:36px;border:3px solid rgba(200,169,110,0.25);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite,fadeUp .5s ease .9s both;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* ══════════════════════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════════════════════ */
+#onboarding{background:linear-gradient(160deg,#0D1520,#1A2B4A,#1E4040);}
+.ob-slides{flex:1;position:relative;overflow:hidden;}
+.ob-slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:40px 32px;
+  opacity:0;transform:translateX(100%);
+  transition:all .45s cubic-bezier(.4,0,.2,1);
+}
+.ob-slide.active{opacity:1;transform:translateX(0);}
+.ob-slide.prev{opacity:0;transform:translateX(-100%);}
+.ob-icon{
+  width:120px;height:120px;border-radius:50%;
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(200,169,110,0.35);
+  backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:54px;margin-bottom:28px;
+}
+.ob-title{font-size:26px;font-weight:800;color:#fff;text-align:center;margin-bottom:14px;line-height:1.4;}
+.ob-desc{font-size:14.5px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.9;}
+.ob-bottom{padding:16px 24px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;}
+.ob-dots{display:flex;justify-content:center;gap:8px;}
+.ob-dot{height:8px;border-radius:4px;background:rgba(255,255,255,0.25);transition:all .3s;}
+.ob-dot.active{background:var(--gold);width:24px;}
+.ob-dot:not(.active){width:8px;}
+.ob-actions{display:flex;justify-content:space-between;align-items:center;}
+.btn-ghost{background:none;border:none;color:rgba(255,255,255,0.45);font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer;padding:10px;}
+
+/* ══════════════════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:700;
+  border-radius:var(--r);transition:all var(--trans);
+  -webkit-user-select:none;user-select:none;
+}
+.btn:active{transform:scale(0.97);}
+.btn-primary{
+  width:100%;padding:15px;font-size:16px;color:#fff;
+  background:linear-gradient(135deg,var(--navy-l),var(--navy));
+  box-shadow:0 4px 20px rgba(26,43,74,0.35);
+}
+.btn-primary:active{background:var(--navy);}
+.btn-gold{
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  color:#fff;box-shadow:0 4px 20px rgba(200,169,110,0.4);
+}
+.btn-gold:active{background:var(--gold-d);}
+.btn-outline{
+  background:transparent;border:1.5px solid var(--border2);
+  color:var(--text);padding:13px 20px;font-size:15px;
+}
+.btn-ob{
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  color:#fff;border-radius:30px;padding:13px 32px;font-size:16px;
+  box-shadow:0 4px 20px rgba(200,169,110,0.35);
+}
+.btn-back-nav{
+  background:var(--surf2);border:1px solid var(--border);
+  color:var(--text);padding:13px 18px;font-size:14px;border-radius:var(--r);
+  backdrop-filter:blur(10px);
+}
+.btn-fwd{
+  flex:1;padding:15px;font-size:15px;color:#fff;
+  background:linear-gradient(135deg,var(--navy-l),var(--navy));
+  border-radius:var(--r);border:none;cursor:pointer;font-family:'Cairo',sans-serif;
+  font-weight:700;transition:all var(--trans);
+}
+.btn-fwd:disabled{background:var(--border2);color:var(--text3);cursor:not-allowed;box-shadow:none;}
+.btn-fwd.finish{background:linear-gradient(135deg,var(--gold-l),var(--gold));}
+.btn-fwd:not(:disabled):active{transform:scale(0.97);}
+
+/* ══════════════════════════════════════════════════════
+   FORM ELEMENTS
+══════════════════════════════════════════════════════ */
+.screen-header{
+  padding:16px 20px 0;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.progress-bar{height:5px;background:var(--border2);border-radius:3px;margin-bottom:12px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-l));border-radius:3px;transition:width .5s ease;}
+.screen-title{font-size:21px;font-weight:800;margin-bottom:3px;}
+.screen-sub{font-size:12.5px;color:var(--text2);margin-bottom:14px;}
+.form-body{padding:18px 20px 24px;display:flex;flex-direction:column;gap:13px;}
+.field-label{font-size:12.5px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;}
+.field-wrap{display:flex;flex-direction:column;}
+input[type=text],input[type=number],input[type=email],input[type=password],select,textarea{
+  width:100%;padding:13px 14px;
+  border:1.5px solid var(--border2);
+  border-radius:var(--r-sm);
+  font-family:'Cairo',sans-serif;font-size:14.5px;
+  color:var(--text);background:var(--input-bg);
+  backdrop-filter:blur(10px);
+  outline:none;transition:border-color var(--trans),box-shadow var(--trans);
+  direction:rtl;appearance:none;-webkit-appearance:none;
+}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169,110,0.15);}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:left 12px center;
+  padding-left:36px;
+}
+.switch-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;
+  background:var(--surf);
+  border-radius:var(--r-sm);border:1px solid var(--border);
+  backdrop-filter:blur(10px);
+  transition:background var(--trans);
+}
+.switch-emoji{font-size:19px;}
+.switch-label{flex:1;font-size:14px;font-weight:500;}
+.sw{position:relative;width:44px;height:25px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;}
+.sw-track{
+  position:absolute;inset:0;background:var(--border2);
+  border-radius:13px;cursor:pointer;transition:.3s;
+}
+.sw-track:before{
+  content:'';position:absolute;width:19px;height:19px;
+  right:3px;bottom:3px;background:#fff;border-radius:50%;
+  transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2);
+}
+.sw input:checked+.sw-track{background:var(--gold);}
+.sw input:checked+.sw-track:before{transform:translateX(-19px);}
+.slider-row{
+  display:flex;flex-direction:column;gap:8px;
+  padding:12px 14px;background:var(--surf);
+  border-radius:var(--r-sm);border:1px solid var(--border);
+  backdrop-filter:blur(10px);
+}
+.slider-header{display:flex;justify-content:space-between;align-items:center;}
+.slider-val{
+  background:rgba(200,169,110,0.15);color:var(--gold);
+  font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;
+}
+input[type=range]{width:100%;accent-color:var(--gold);height:5px;cursor:pointer;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ══════════════════════════════════════════════════════
+   BOTTOM NAV TABS
+══════════════════════════════════════════════════════ */
+#bottom-nav{
+  display:none;flex-shrink:0;
+  flex-direction:row;
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+}
+#bottom-nav.visible{display:flex;}
+.nav-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 0;cursor:pointer;transition:all var(--trans);
+  background:none;border:none;font-family:'Cairo',sans-serif;color:var(--text3);
+}
+.nav-tab.active{color:var(--gold);}
+.nav-tab .nav-icon{font-size:22px;transition:transform var(--trans);}
+.nav-tab.active .nav-icon{transform:scale(1.1);}
+.nav-tab .nav-lbl{font-size:10.5px;font-weight:600;}
+
+/* ══════════════════════════════════════════════════════
+   QUESTIONS
+══════════════════════════════════════════════════════ */
+#questions{overflow:hidden;}
+.q-header{
+  padding:14px 20px 0;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.q-counter{font-size:12px;color:var(--text2);}
+.q-cat{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;background:rgba(200,169,110,0.1);
+  border:1px solid rgba(200,169,110,0.25);border-radius:20px;
+  font-size:11.5px;font-weight:600;color:var(--gold);margin-bottom:10px;
+}
+.q-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 20px 16px;-webkit-overflow-scrolling:touch;}
+.q-text{font-size:17px;font-weight:700;line-height:1.7;margin-bottom:6px;color:var(--text);}
+.q-hint{font-size:11.5px;color:var(--text3);font-style:italic;margin-bottom:6px;}
+.q-ctx{
+  padding:9px 12px;background:rgba(46,139,139,0.07);
+  border-radius:8px;border:1px solid rgba(46,139,139,0.2);
+  font-size:11.5px;color:var(--teal);line-height:1.6;margin-bottom:14px;
+}
+.options{display:flex;flex-direction:column;gap:9px;}
+.option{
+  display:flex;align-items:center;gap:11px;
+  padding:13px 14px;
+  background:var(--surf);
+  border-radius:var(--r);border:1.5px solid var(--border);
+  cursor:pointer;transition:all .2s;
+  backdrop-filter:blur(10px);-webkit-user-select:none;user-select:none;
+}
+.option:active{transform:scale(0.985);}
+.option.selected{
+  background:rgba(200,169,110,0.1);border-color:var(--gold);
+  box-shadow:0 2px 16px rgba(200,169,110,0.18);
+}
+.opt-emoji{font-size:21px;width:28px;text-align:center;flex-shrink:0;}
+.opt-text{flex:1;font-size:14.5px;font-weight:400;line-height:1.5;color:var(--text);}
+.option.selected .opt-text{font-weight:600;}
+.opt-chk{
+  width:21px;height:21px;border-radius:50%;
+  border:2px solid var(--border2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.option.selected .opt-chk{background:var(--gold);border-color:var(--gold);}
+.opt-chk svg{opacity:0;transition:opacity .2s;}
+.option.selected .opt-chk svg{opacity:1;}
+.q-nav{
+  display:flex;gap:9px;padding:11px 20px;
+  padding-bottom:calc(11px + env(safe-area-inset-bottom,0px));
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);flex-shrink:0;
+}
+
+/* ══════════════════════════════════════════════════════
+   ANALYZING
+══════════════════════════════════════════════════════ */
+#analyzing{
+  background:linear-gradient(160deg,#0D1520,#1A2B4A,#1E4040);
+  align-items:center;justify-content:center;gap:18px;
+}
+.an-brain{font-size:62px;animation:brainPulse 1.5s ease-in-out infinite;}
+@keyframes brainPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.an-title{font-size:21px;font-weight:700;color:#fff;}
+.an-sub{font-size:13.5px;color:rgba(255,255,255,0.55);text-align:center;padding:0 28px;line-height:1.8;}
+.an-spinner{width:46px;height:46px;border:3px solid rgba(200,169,110,0.25);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
+.an-steps{display:flex;flex-direction:column;gap:9px;padding:0 28px;}
+.an-step{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.4);transition:color .5s;}
+.an-step.done{color:var(--gold-l);}
+.an-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);transition:background .5s;}
+.an-step.done .an-dot{background:var(--gold);}
+
+/* ══════════════════════════════════════════════════════
+   RESULTS
+══════════════════════════════════════════════════════ */
+#results{overflow:hidden;display:flex;flex-direction:column;}
+.results-hero{
+  background:linear-gradient(160deg,#0D1520,#1A2B4A,#1E4040);
+  padding:50px 24px 28px;text-align:center;flex-shrink:0;
+}
+.res-ring{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;margin:0 auto 14px;
+  box-shadow:0 0 0 16px rgba(200,169,110,0.1),0 0 40px rgba(200,169,110,0.35);
+}
+.res-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;}
+.res-sub{font-size:12.5px;color:rgba(255,255,255,0.55);}
+.res-body{flex:1;overflow-y:auto;padding:18px 16px 28px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:14px;}
+
+/* Result Cards */
+.r-card{
+  background:var(--surf);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;
+  box-shadow:var(--shadow-sm);
+}
+.r-card-title{display:flex;align-items:center;gap:8px;font-size:15.5px;font-weight:700;margin-bottom:13px;color:var(--text);}
+.rc-bar{width:4px;height:19px;border-radius:2px;}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:11px;}
+.gauge-circle{position:relative;width:140px;height:140px;}
+.gauge-circle svg{transform:rotate(-90deg);}
+.gauge-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.gauge-pct{font-size:34px;font-weight:900;}
+.gauge-lbl{font-size:10.5px;font-weight:600;}
+.gauge-desc{font-size:13px;color:var(--text2);text-align:center;line-height:1.75;}
+.p-row{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);}
+.p-row:last-child{border-bottom:none;}
+.p-ico{font-size:17px;width:26px;text-align:center;flex-shrink:0;}
+.p-col{flex:1;}
+.p-lbl{font-size:11px;color:var(--text3);}
+.p-val{font-size:13.5px;font-weight:600;line-height:1.5;color:var(--text);}
+.p-desc{margin-top:11px;padding:11px;background:rgba(200,169,110,0.07);border-radius:9px;border:1px solid rgba(200,169,110,0.18);font-size:12.5px;line-height:1.8;color:var(--text);}
+.ind-row{margin-bottom:11px;}
+.ind-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.ind-nm{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--text);}
+.ind-pct{font-size:12.5px;font-weight:700;}
+.ind-bg{height:7px;background:var(--border2);border-radius:4px;overflow:hidden;}
+.ind-fill{height:100%;border-radius:4px;transition:width 1.5s ease;}
+.ind-note{font-size:11px;color:var(--text3);margin-top:2px;}
+.blist{display:flex;flex-direction:column;gap:7px;}
+.bitem{display:flex;gap:9px;align-items:flex-start;}
+.bemo{font-size:13.5px;flex-shrink:0;margin-top:2px;}
+.btxt{font-size:13px;line-height:1.7;color:var(--text);}
+.gov-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);}
+.gov-row:last-child{border-bottom:none;}
+.gov-nm{font-size:13.5px;font-weight:600;width:90px;flex-shrink:0;color:var(--text);}
+.gov-wrap{flex:1;display:flex;flex-direction:column;gap:3px;}
+.gov-bar-bg{height:7px;background:var(--border2);border-radius:4px;overflow:hidden;}
+.gov-bar{height:100%;border-radius:4px;}
+.gov-pct-lbl{font-size:11px;color:var(--text3);}
+.warn-card{background:rgba(198,40,40,0.06);border:1px solid rgba(198,40,40,0.22);border-radius:var(--r);padding:15px;}
+.warn-hd{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;color:var(--danger);margin-bottom:11px;}
+.disclaimer{background:var(--bg2);border-radius:var(--r-sm);padding:13px;font-size:11px;color:var(--text3);text-align:center;line-height:1.75;}
+
+/* ══════════════════════════════════════════════════════
+   SETTINGS PAGE
+══════════════════════════════════════════════════════ */
+#settings{overflow:hidden;display:flex;flex-direction:column;}
+.settings-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:24px;}
+.settings-section{display:flex;flex-direction:column;gap:8px;}
+.settings-label{font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:0 4px;}
+.settings-card{
+  background:var(--surf);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
+}
+.settings-row{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background var(--trans);
+}
+.settings-row:last-child{border-bottom:none;}
+.settings-row:active{background:rgba(200,169,110,0.06);}
+.sr-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.sr-text{flex:1;}
+.sr-title{font-size:14.5px;font-weight:600;color:var(--text);}
+.sr-sub{font-size:11.5px;color:var(--text3);margin-top:1px;}
+.sr-arrow{font-size:12px;color:var(--text3);}
+
+/* Theme Selector */
+.theme-selector{display:flex;gap:8px;padding:14px 16px;}
+.theme-opt{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:11px 8px;border-radius:var(--r-sm);border:1.5px solid var(--border);
+  cursor:pointer;transition:all var(--trans);background:var(--bg2);
+}
+.theme-opt.active{border-color:var(--gold);background:rgba(200,169,110,0.1);}
+.theme-opt .t-ico{font-size:22px;}
+.theme-opt .t-lbl{font-size:11px;font-weight:600;color:var(--text2);}
+.theme-opt.active .t-lbl{color:var(--gold);}
+
+/* ══════════════════════════════════════════════════════
+   ACCOUNT PAGE
+══════════════════════════════════════════════════════ */
+#account{overflow:hidden;display:flex;flex-direction:column;}
+.account-body{flex:1;overflow-y:auto;padding:24px 20px;display:flex;flex-direction:column;gap:18px;padding-bottom:32px;}
+.account-hero{text-align:center;padding:24px 0 8px;}
+.account-avatar{
+  width:80px;height:80px;border-radius:50%;margin:0 auto 12px;
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;box-shadow:0 4px 20px rgba(200,169,110,0.3);
+}
+.account-name{font-size:20px;font-weight:800;color:var(--text);}
+.account-email{font-size:13px;color:var(--text2);margin-top:3px;}
+.auth-tabs{display:flex;background:var(--bg2);border-radius:var(--r);padding:4px;gap:4px;}
+.auth-tab{flex:1;padding:10px;text-align:center;border-radius:var(--r-sm);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);transition:all var(--trans);}
+.auth-tab.active{background:var(--surf);color:var(--gold);box-shadow:var(--shadow-sm);}
+.auth-form{display:flex;flex-direction:column;gap:12px;}
+.field-icon-wrap{position:relative;}
+.field-icon-wrap input{padding-right:42px;}
+.field-ico{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none;}
+.divider{display:flex;align-items:center;gap:12px;color:var(--text3);font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border2);}
+.btn-danger{background:rgba(198,40,40,0.1);color:var(--danger);border:1px solid rgba(198,40,40,0.25);width:100%;padding:13px;border-radius:var(--r);font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+
+/* ══════════════════════════════════════════════════════
+   HISTORY PAGE
+══════════════════════════════════════════════════════ */
+#history{overflow:hidden;display:flex;flex-direction:column;}
+.history-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:24px;}
+.history-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 20px;color:var(--text3);text-align:center;}
+.history-empty .he-icon{font-size:54px;opacity:.5;}
+.history-empty .he-title{font-size:16px;font-weight:600;color:var(--text2);}
+.history-empty .he-sub{font-size:13px;line-height:1.7;}
+.hist-card{
+  background:var(--surf);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:var(--r);padding:15px;
+  cursor:pointer;transition:all var(--trans);
+}
+.hist-card:active{transform:scale(0.99);}
+.hist-card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.hist-date{font-size:11.5px;color:var(--text3);}
+.hist-pct{font-size:13px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.hist-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.hist-gov{font-size:12px;color:var(--text3);}
+
+/* ══════════════════════════════════════════════════════
+   MODAL / TOAST / LOADER
+══════════════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:90px;left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:var(--danger);color:#fff;
+  padding:10px 20px;border-radius:10px;
+  font-family:'Cairo',sans-serif;font-size:13.5px;
+  opacity:0;transition:all .3s;z-index:999;white-space:nowrap;
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{background:var(--success);}
+
+/* No internet banner */
+.no-net{
+  position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:var(--danger);color:#fff;
+  padding:10px 16px;text-align:center;
+  font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;
+  z-index:998;display:none;
+}
+.no-net.show{display:block;}
+
+/* ══════════════════════════════════════════════════════
+   HEADER GENERIC
+══════════════════════════════════════════════════════ */
+.page-header{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.page-header-title{font-size:18px;font-weight:800;color:var(--text);flex:1;text-align:center;}
+.btn-back-hd{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surf2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;flex-shrink:0;
+  transition:all var(--trans);
+}
+.btn-back-hd:active{background:var(--gold);color:#fff;}
+.hd-placeholder{width:36px;flex-shrink:0;}
+
+/* ══════════════════════════════════════════════════════
+   SUPPORT PAGE
+══════════════════════════════════════════════════════ */
+#support{overflow:hidden;display:flex;flex-direction:column;}
+.support-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:24px;}
+.support-hero{text-align:center;padding:20px 0;}
+.sup-icon{font-size:52px;margin-bottom:10px;}
+.sup-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.sup-sub{font-size:13px;color:var(--text2);line-height:1.7;}
+.faq-item{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);}
+.faq-a{display:none;padding:0 16px 14px;font-size:13px;color:var(--text2);line-height:1.8;}
+.faq-item.open .faq-a{display:block;}
+.faq-item.open .faq-arrow{transform:rotate(180deg);}
+.faq-arrow{transition:transform var(--trans);}
+
+/* شريط التنقل أسفل الشاشة */
+#bottom-nav{position:absolute;left:0;right:0;bottom:0;z-index:100}
+#app:has(#bottom-nav.visible) .screen:not(#splash):not(#onboarding){bottom:68px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- NO INTERNET BANNER -->
+<div class="no-net" id="no-net">⚠️ لا يوجد اتصال بالإنترنت — التحليل سيعمل بالنمط المحلي</div>
+
+<!-- ══ SPLASH ══ -->
+<div class="screen active" id="splash">
+  <div class="splash-bg">
+    <div class="splash-orb"></div>
+    <div class="splash-orb"></div>
+  </div>
+  <div class="splash-content">
+    <div class="splash-ring">💍</div>
+    <div class="splash-title">نصيبي</div>
+    <div class="splash-sub">اعرف نفسك قبل أن تعرف شريكك</div>
+    <div class="splash-loader"></div>
+  </div>
+</div>
+
+<!-- ══ ONBOARDING ══ -->
+<div class="screen" id="onboarding">
+  <div class="ob-slides">
+    <div class="ob-slide active">
+      <div class="ob-icon">🪞</div>
+      <div class="ob-title">اعرف نفسك أولاً</div>
+      <div class="ob-desc">قبل البحث عن شريكة الحياة، نصيبي يساعدك على فهم شخصيتك بعمق: طريقة تفكيرك، قيمك، ونقاط قوتك وجوانب تطويرك.</div>
+    </div>
+    <div class="ob-slide">
+      <div class="ob-icon">🧠</div>
+      <div class="ob-title">تحليل ذكي ودقيق</div>
+      <div class="ob-desc">أسئلة ذكية مصممة للمجتمع العراقي، تكشف النضج العاطفي والاستقرار النفسي والجاهزية الحقيقية للزواج.</div>
+    </div>
+    <div class="ob-slide">
+      <div class="ob-icon">📊</div>
+      <div class="ob-title">تقرير صريح وواقعي</div>
+      <div class="ob-desc">تحليل مفصل بمؤشرات توافق مرجّحة — بصدق كامل لا مجاملات. لأن قرار الزواج يستحق الوضوح.</div>
+    </div>
+  </div>
+  <div class="ob-bottom">
+    <div class="ob-dots">
+      <div class="ob-dot active"></div>
+      <div class="ob-dot"></div>
+      <div class="ob-dot"></div>
+    </div>
+    <div class="ob-actions">
+      <button class="btn-ghost" onclick="skipToPersonal()">تخطي</button>
+      <button class="btn btn-ob" id="ob-btn" onclick="handleObBtn()">التالي ←</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PERSONAL INFO ══ -->
+<div class="screen" id="personal-info">
+  <div class="screen-header">
+    <div class="progress-bar"><div class="progress-fill" style="width:15%"></div></div>
+    <div class="screen-title">معلوماتك الأساسية</div>
+    <div class="screen-sub">هذه المعلومات تساعدنا على تحليل أدق وأنسب لك</div>
+  </div>
+  <!-- scroll-body يحتوي الحقول فقط -->
+  <div class="scroll-body">
+    <div class="form-body">
+      <div class="two-col">
+        <div class="field-wrap">
+          <label class="field-label">🎂 عمرك</label>
+          <input type="number" id="age" placeholder="مثال: 28" min="18" max="60">
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">📍 المحافظة</label>
+          <select id="governorate">
+            <option value="">اختر</option>
+            <option>بغداد</option><option>البصرة</option><option>نينوى</option>
+            <option>أربيل</option><option>النجف</option><option>كربلاء</option>
+            <option>ذي قار</option><option>بابل</option><option>المثنى</option>
+            <option>القادسية</option><option>ميسان</option><option>واسط</option>
+            <option>صلاح الدين</option><option>ديالى</option><option>الأنبار</option>
+            <option>كركوك</option><option>دهوك</option><option>السليمانية</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">🎓 مستواك التعليمي</label>
+        <select id="education">
+          <option value="">اختر</option>
+          <option>أقل من الثانوية</option><option>شهادة الثانوية</option>
+          <option>دبلوم</option><option>بكالوريوس</option>
+          <option>دراسات عليا (ماجستير/دكتوراه)</option>
+        </select>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">💼 وظيفتك</label>
+        <input type="text" id="occupation" placeholder="مثال: مهندس، معلم، طالب...">
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">🏢 قطاع العمل</label>
+        <select id="work-sector">
+          <option value="">اختر</option>
+          <option>موظف حكومي</option><option>قطاع خاص</option>
+          <option>عمل حر</option><option>صاحب عمل</option>
+          <option>طالب</option><option>بدون عمل حالياً</option>
+        </select>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">💰 نطاق دخلك الشهري</label>
+        <select id="income">
+          <option value="">اختر</option>
+          <option>أقل من 300 ألف دينار</option>
+          <option>300 - 600 ألف</option>
+          <option>600 ألف - مليون</option>
+          <option>مليون - مليوناً</option>
+          <option>أكثر من مليوناً</option>
+        </select>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">🕌 مستوى التزامك الديني</label>
+        <select id="religious">
+          <option value="">اختر</option>
+          <option>ملتزم جداً</option>
+          <option>محافظ بشكل معتدل</option>
+          <option>متدين لكن منفتح</option>
+          <option>غير ملتزم بشكل كبير</option>
+        </select>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span style="font-size:13px;font-weight:600;color:var(--text2)">👨‍👩‍👧‍👦 عدد أفراد عائلتك</span>
+          <span class="slider-val" id="fam-val">5 أفراد</span>
+        </div>
+        <input type="range" id="fam-size" min="2" max="15" value="5" oninput="document.getElementById('fam-val').textContent=this.value+' أفراد'">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span style="font-size:13px;font-weight:600;color:var(--text2)">🔢 ترتيبك بين إخوتك</span>
+          <span class="slider-val" id="birth-val">الأول</span>
+        </div>
+        <input type="range" id="birth-order" min="1" max="10" value="1" oninput="setBirthLabel(this.value)">
+      </div>
+      <label class="switch-row">
+        <span class="switch-emoji">🏠</span>
+        <span class="switch-label">لديك سكن مستقل</span>
+        <label class="sw"><input type="checkbox" id="has-home"><span class="sw-track"></span></label>
+      </label>
+      <label class="switch-row">
+        <span class="switch-emoji">✈️</span>
+        <span class="switch-label">عشت خارج العراق</span>
+        <label class="sw"><input type="checkbox" id="lived-abroad"><span class="sw-track"></span></label>
+      </label>
+      <label class="switch-row">
+        <span class="switch-emoji">🚬</span>
+        <span class="switch-label">مدخن</span>
+        <label class="sw"><input type="checkbox" id="smokes"><span class="sw-track"></span></label>
+      </label>
+      <label class="switch-row">
+        <span class="switch-emoji">💍</span>
+        <span class="switch-label">كانت لديك خطوبة سابقة</span>
+        <label class="sw"><input type="checkbox" id="prev-eng"><span class="sw-track"></span></label>
+      </label>
+      <label class="switch-row">
+        <span class="switch-emoji">💼</span>
+        <span class="switch-label">تفضّل زوجة موظفة</span>
+        <label class="sw"><input type="checkbox" id="pref-work" checked><span class="sw-track"></span></label>
+      </label>
+      <label class="switch-row">
+        <span class="switch-emoji">🏡</span>
+        <span class="switch-label">تفضّل السكن مع الأهل</span>
+        <label class="sw"><input type="checkbox" id="pref-parents"><span class="sw-track"></span></label>
+      </label>
+      <label class="switch-row">
+        <span class="switch-emoji">👶</span>
+        <span class="switch-label">تريد إنجاب أطفال</span>
+        <label class="sw"><input type="checkbox" id="wants-kids" checked><span class="sw-track"></span></label>
+      </label>
+    </div>
+  </div>
+  <!-- زر ثابت في الأسفل -->
+  <div class="sticky-bottom">
+    <button class="btn btn-primary" onclick="startQs()">ابدأ الاستبيان ←</button>
+  </div>
+</div>
+
+<!-- ══ QUESTIONS ══ -->
+<div class="screen" id="questions">
+  <div class="q-header">
+    <div class="q-meta">
+      <span class="q-counter" id="q-cnt">السؤال 1 من 15</span>
+      <span style="font-size:11px;color:var(--text3)" id="q-pct-lbl">6%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="q-prog" style="width:6%"></div></div>
+    <div class="q-cat" id="q-cat">🎯 الشخصية</div>
+  </div>
+  <div class="q-body" id="q-body"></div>
+  <div class="q-nav">
+    <button class="btn-back-nav" id="btn-back" onclick="prevQ()" style="display:none">← رجوع</button>
+    <button class="btn-fwd" id="btn-fwd" onclick="nextQ()" disabled>التالي</button>
+  </div>
+</div>
+
+<!-- ══ ANALYZING ══ -->
+<div class="screen" id="analyzing">
+  <div class="an-brain">🧠</div>
+  <div class="an-title">جارٍ تحليل شخصيتك...</div>
+  <div class="an-sub">نقوم بمعالجة إجاباتك وبناء تقريرك المخصص</div>
+  <div class="an-steps">
+    <div class="an-step" id="as1"><div class="an-dot"></div>تحليل الأبعاد النفسية</div>
+    <div class="an-step" id="as2"><div class="an-dot"></div>تقييم النضج العاطفي</div>
+    <div class="an-step" id="as3"><div class="an-dot"></div>حساب مؤشرات التوافق</div>
+    <div class="an-step" id="as4"><div class="an-dot"></div>بناء ملف الشريكة المقترحة</div>
+    <div class="an-step" id="as5"><div class="an-dot"></div>إعداد التقرير النهائي</div>
+  </div>
+  <div class="an-spinner"></div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen" id="results">
+  <div class="results-hero">
+    <div class="res-ring">💍</div>
+    <div class="res-title">تقريرك جاهز</div>
+    <div class="res-sub" id="res-sub">استناداً إلى 15 سؤالاً</div>
+  </div>
+  <div class="res-body" id="res-body"></div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div class="screen" id="settings">
+  <div class="page-header">
+    <div class="hd-placeholder"></div>
+    <div class="page-header-title">الإعدادات</div>
+    <div class="hd-placeholder"></div>
+  </div>
+  <div class="settings-body">
+    <!-- المظهر -->
+    <div class="settings-section">
+      <div class="settings-label">المظهر</div>
+      <div class="settings-card">
+        <div class="theme-selector">
+          <div class="theme-opt active" id="th-light" onclick="setTheme('light')">
+            <div class="t-ico">☀️</div>
+            <div class="t-lbl">فاتح</div>
+          </div>
+          <div class="theme-opt" id="th-dark" onclick="setTheme('dark')">
+            <div class="t-ico">🌙</div>
+            <div class="t-lbl">غامق</div>
+          </div>
+          <div class="theme-opt" id="th-system" onclick="setTheme('system')">
+            <div class="t-ico">📱</div>
+            <div class="t-lbl">النظام</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- الحساب -->
+    <div class="settings-section">
+      <div class="settings-label">الحساب</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="goScreen('account')">
+          <div class="sr-icon" style="background:rgba(200,169,110,0.12)">👤</div>
+          <div class="sr-text"><div class="sr-title">الحساب الشخصي</div><div class="sr-sub">تسجيل الدخول أو إنشاء حساب</div></div>
+          <div class="sr-arrow">›</div>
+        </div>
+        <div class="settings-row" onclick="goScreen('history')">
+          <div class="sr-icon" style="background:rgba(46,139,139,0.12)">📊</div>
+          <div class="sr-text"><div class="sr-title">سجل التقارير</div><div class="sr-sub">تقاريرك السابقة</div></div>
+          <div class="sr-arrow">›</div>
+        </div>
+      </div>
+    </div>
+    <!-- التطبيق -->
+    <div class="settings-section">
+      <div class="settings-label">التطبيق</div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="goScreen('support')">
+          <div class="sr-icon" style="background:rgba(46,125,50,0.12)">❓</div>
+          <div class="sr-text"><div class="sr-title">المساعدة والدعم</div><div class="sr-sub">أسئلة شائعة وتواصل معنا</div></div>
+          <div class="sr-arrow">›</div>
+        </div>
+        <div class="settings-row" onclick="showPrivacy()">
+          <div class="sr-icon" style="background:rgba(26,43,74,0.1)">🔒</div>
+          <div class="sr-text"><div class="sr-title">سياسة الخصوصية</div><div class="sr-sub">كيف نحمي بياناتك</div></div>
+          <div class="sr-arrow">›</div>
+        </div>
+        <div class="settings-row" onclick="showTerms()">
+          <div class="sr-icon" style="background:rgba(26,43,74,0.1)">📄</div>
+          <div class="sr-text"><div class="sr-title">شروط الاستخدام</div><div class="sr-sub">اتفاقية المستخدم</div></div>
+          <div class="sr-arrow">›</div>
+        </div>
+      </div>
+    </div>
+    <!-- معلومات -->
+    <div class="settings-section">
+      <div class="settings-label">معلومات</div>
+      <div class="settings-card">
+        <div class="settings-row" style="cursor:default">
+          <div class="sr-icon" style="background:rgba(200,169,110,0.12)">💍</div>
+          <div class="sr-text"><div class="sr-title">نصيبي</div><div class="sr-sub">الإصدار 1.0.0 — 2026</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACCOUNT ══ -->
+<div class="screen" id="account">
+  <div class="page-header">
+    <button class="btn-back-hd" onclick="goScreen('settings')">‹</button>
+    <div class="page-header-title">الحساب</div>
+    <div class="hd-placeholder"></div>
+  </div>
+  <div class="account-body" id="account-body">
+    <div id="auth-section">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">حساب جديد</button>
+      </div>
+      <!-- Login Form -->
+      <div id="form-login" class="auth-form" style="margin-top:16px">
+        <div class="field-wrap">
+          <label class="field-label">البريد الإلكتروني</label>
+          <div class="field-icon-wrap">
+            <span class="field-ico">📧</span>
+            <input type="email" id="login-email" placeholder="example@email.com" style="direction:ltr;text-align:right">
+          </div>
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">كلمة المرور</label>
+          <div class="field-icon-wrap">
+            <span class="field-ico">🔑</span>
+            <input type="password" id="login-pass" placeholder="••••••••" style="direction:ltr">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()">تسجيل الدخول</button>
+        <div class="divider">أو</div>
+        <button class="btn btn-outline" onclick="continueGuest()" style="width:100%;padding:13px;font-size:14px">متابعة بدون حساب</button>
+      </div>
+      <!-- Register Form -->
+      <div id="form-register" class="auth-form" style="margin-top:16px;display:none">
+        <div class="field-wrap">
+          <label class="field-label">الاسم</label>
+          <div class="field-icon-wrap">
+            <span class="field-ico">👤</span>
+            <input type="text" id="reg-name" placeholder="اسمك الكامل">
+          </div>
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">البريد الإلكتروني</label>
+          <div class="field-icon-wrap">
+            <span class="field-ico">📧</span>
+            <input type="email" id="reg-email" placeholder="example@email.com" style="direction:ltr;text-align:right">
+          </div>
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">كلمة المرور</label>
+          <div class="field-icon-wrap">
+            <span class="field-ico">🔑</span>
+            <input type="password" id="reg-pass" placeholder="8 أحرف على الأقل" style="direction:ltr">
+          </div>
+        </div>
+        <button class="btn btn-gold" style="width:100%;padding:15px;font-size:15px" onclick="doRegister()">إنشاء الحساب</button>
+        <p style="font-size:11px;color:var(--text3);text-align:center;line-height:1.7">بإنشاء حساب، توافق على <span style="color:var(--gold);cursor:pointer" onclick="showTerms()">شروط الاستخدام</span> و<span style="color:var(--gold);cursor:pointer" onclick="showPrivacy()">سياسة الخصوصية</span></p>
+      </div>
+    </div>
+    <!-- Logged In State (hidden by default) -->
+    <div id="logged-section" style="display:none">
+      <div class="account-hero">
+        <div class="account-avatar" id="user-avatar">👤</div>
+        <div class="account-name" id="user-name">مستخدم</div>
+        <div class="account-email" id="user-email-disp"></div>
+      </div>
+      <div class="settings-card">
+        <div class="settings-row" onclick="goScreen('history')">
+          <div class="sr-icon" style="background:rgba(46,139,139,0.12)">📊</div>
+          <div class="sr-text"><div class="sr-title">تقاريري</div><div class="sr-sub">عرض جميع التقارير السابقة</div></div>
+          <div class="sr-arrow">›</div>
+        </div>
+      </div>
+      <button class="btn btn-outline" style="width:100%;padding:13px;margin-top:8px" onclick="doLogout()">تسجيل الخروج</button>
+      <button class="btn-danger" style="margin-top:8px" onclick="confirmDeleteAccount()">حذف الحساب ومسح البيانات</button>
+      <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px;line-height:1.6">يمكنك أيضاً طلب حذف حسابك عبر: <span style="color:var(--gold)">delete@naseebi.app</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HISTORY ══ -->
+<div class="screen" id="history">
+  <div class="page-header">
+    <button class="btn-back-hd" onclick="goScreen('settings')">‹</button>
+    <div class="page-header-title">سجل التقارير</div>
+    <div class="hd-placeholder"></div>
+  </div>
+  <div class="history-body" id="history-body">
+    <div class="history-empty">
+      <div class="he-icon">📊</div>
+      <div class="he-title">لا توجد تقارير بعد</div>
+      <div class="he-sub">أكمل الاستبيان لتظهر تقاريرك هنا</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUPPORT ══ -->
+<div class="screen" id="support">
+  <div class="page-header">
+    <button class="btn-back-hd" onclick="goScreen('settings')">‹</button>
+    <div class="page-header-title">المساعدة والدعم</div>
+    <div class="hd-placeholder"></div>
+  </div>
+  <div class="support-body">
+    <div class="support-hero">
+      <div class="sup-icon">🤝</div>
+      <div class="sup-title">كيف يمكننا مساعدتك؟</div>
+      <div class="sup-sub">تواصل معنا أو اطلع على الأسئلة الشائعة أدناه</div>
+    </div>
+    <div class="settings-card">
+      <div class="settings-row" onclick="showToast2('سيتم فتح البريد الإلكتروني','success')">
+        <div class="sr-icon" style="background:rgba(200,169,110,0.12)">📧</div>
+        <div class="sr-text"><div class="sr-title">تواصل معنا</div><div class="sr-sub">support@naseebi.app</div></div>
+        <div class="sr-arrow">›</div>
+      </div>
+    </div>
+    <!-- FAQ -->
+    <div class="settings-label" style="padding:0 4px">أسئلة شائعة</div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">هل التطبيق يضمن نجاح الزواج؟ <span class="faq-arrow">▾</span></div>
+      <div class="faq-a">لا. نصيبي هو أداة استرشادية فقط تقدم مؤشرات توافق مرجّحة بناءً على إجاباتك. قرار الزواج مسؤوليتك الكاملة ويستلزم مشورة الأهل والمختصين.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">هل بياناتي آمنة؟ <span class="faq-arrow">▾</span></div>
+      <div class="faq-a">نعم. بياناتك محفوظة محلياً على جهازك فقط ولا تُشارك مع أي جهة خارجية. لا نجمع أسماء أو أرقام هواتف في النسخة المجانية.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">كيف أحذف بياناتي؟ <span class="faq-arrow">▾</span></div>
+      <div class="faq-a">اذهب إلى الإعدادات → الحساب → حذف الحساب ومسح البيانات. أو راسلنا على: delete@naseebi.app</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">هل التطبيق مجاني؟ <span class="faq-arrow">▾</span></div>
+      <div class="faq-a">نعم، النسخة الأساسية مجانية بالكامل وتشمل الاستبيان والتقرير الكامل. ستتوفر ميزات متقدمة في النسخة المميزة مستقبلاً.</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav">
+  <button class="nav-tab" id="nav-home" onclick="navTo('home')">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-lbl">الرئيسية</div>
+  </button>
+  <button class="nav-tab" id="nav-results-tab" onclick="navTo('results-tab')">
+    <div class="nav-icon">📊</div>
+    <div class="nav-lbl">تقريري</div>
+  </button>
+  <button class="nav-tab" id="nav-settings" onclick="navTo('settings')">
+    <div class="nav-icon">⚙️</div>
+    <div class="nav-lbl">الإعدادات</div>
+  </button>
+</div>
+
+</div><!-- #app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  THEME SYSTEM
+// ══════════════════════════════════════════════
+let currentTheme = localStorage.getItem('naseebi_theme') || 'system';
+
+function applyTheme(t) {
+  const html = document.documentElement;
+  if (t === 'system') {
+    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    html.setAttribute('data-theme', sys);
+  } else {
+    html.setAttribute('data-theme', t);
+  }
+  ['light','dark','system'].forEach(opt => {
+    const el = document.getElementById('th-'+opt);
+    if (el) el.classList.toggle('active', opt === t);
+  });
+}
+
+function setTheme(t) {
+  currentTheme = t;
+  localStorage.setItem('naseebi_theme', t);
+  applyTheme(t);
+  showToast2('تم تغيير المظهر', 'success');
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (currentTheme === 'system') applyTheme('system');
+});
+applyTheme(currentTheme);
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let currentScreen = 'splash';
+let obIdx = 0;
+let currentQ = 0;
+let answers = {};
+let userProfile = {};
+let scores = {};
+let report = null;
+let savedReports = JSON.parse(localStorage.getItem('naseebi_reports') || '[]');
+let currentUser = JSON.parse(localStorage.getItem('naseebi_user') || 'null');
+
+// ══════════════════════════════════════════════
+//  QUESTIONS DATA
+// ══════════════════════════════════════════════
+const QS = [
+  {id:'q1',cat:'إدارة الخلاف',ico:'🤝',
+   text:'تخيّل أنك اتفقت مع زوجتك على خطة، لكنها غيّرتها في اللحظة الأخيرة دون إخبارك. كيف تتصرف؟',
+   hint:'اختر الأقرب لطبيعتك الحقيقية',
+   opts:[
+     {id:'a',e:'💬',t:'أتحدث معها بهدوء وأفهم السبب',s:{cm:0.9,stab:0.8,mat:0.8}},
+     {id:'b',e:'😶',t:'أنزعج لكن أتجاهل تفادياً للمشاكل',s:{cm:0.3,stab:0.5,mat:0.3}},
+     {id:'c',e:'🗣️',t:'أعاتبها بوضوح وأطلب توضيحاً',s:{cm:0.7,assert:0.8,mat:0.7}},
+     {id:'d',e:'😤',t:'أصمت لفترة وأنا زعلان',s:{cm:0.2,stab:0.3,mat:0.2}},
+   ]},
+  {id:'q2',cat:'الغيرة',ico:'💚',
+   text:'صديقك يخبرك أن زوجته تعمل مع زملاء من الجنسين. ما رأيك؟',
+   hint:'يكشف طريقة تفكيرك تجاه بيئة عمل شريكتك',
+   opts:[
+     {id:'a',e:'✅',t:'طبيعي جداً في بيئة العمل الحديثة',s:{jeal:0.1,open:0.9}},
+     {id:'b',e:'⚖️',t:'مقبول بشرط وجود ضوابط',s:{jeal:0.4,open:0.5}},
+     {id:'c',e:'😕',t:'أفضل لو كانت في بيئة منفصلة',s:{jeal:0.7,open:0.3}},
+     {id:'d',e:'🚫',t:'لا أقبل هذا الوضع أصلاً',s:{jeal:0.95,open:0.05}},
+   ]},
+  {id:'q3',cat:'اتخاذ القرار',ico:'🎯',
+   text:'كيف تتخذ قرارات مهمة في حياتك؟',
+   opts:[
+     {id:'a',e:'🔍',t:'أفكر طويلاً وأدرس الخيارات بعمق',s:{consc:0.9,mat:0.8}},
+     {id:'b',e:'👥',t:'أستشير المقربين ثم أقرر',s:{agree:0.8,mat:0.7}},
+     {id:'c',e:'💡',t:'أعتمد على حدسي وحكمتي',s:{open:0.7,conf:0.7}},
+     {id:'d',e:'⏰',t:'أؤجل القرار أحياناً كثيراً',s:{consc:0.2,mat:0.2}},
+   ]},
+  {id:'q4',cat:'المسؤولية',ico:'⚡',
+   text:'حدث خطأ بسبب إهمالك. كيف تتعامل مع الموقف؟',
+   opts:[
+     {id:'a',e:'✋',t:'أعترف مباشرة وأصلح الموقف',s:{resp:0.95,mat:0.9}},
+     {id:'b',e:'😓',t:'أعترف لكن بصعوبة وبعد تفكير',s:{resp:0.7,mat:0.6}},
+     {id:'c',e:'🔄',t:'أبحث عن أسباب خارجية أولاً',s:{resp:0.3,mat:0.3}},
+     {id:'d',e:'🙈',t:'أنكر أو أتجاهل ما حدث',s:{resp:0.05,mat:0.1}},
+   ]},
+  {id:'q5',cat:'الإدارة المالية',ico:'💰',
+   text:'كيف تدير مالك الشخصي عادةً؟',
+   opts:[
+     {id:'a',e:'💹',t:'أدخّر منتظماً ولدي خطة مالية',s:{fin:0.95,consc:0.9}},
+     {id:'b',e:'🏦',t:'أدخّر أحياناً لكن بدون انتظام',s:{fin:0.6,consc:0.5}},
+     {id:'c',e:'💸',t:'أصرف ما أكسبه شهرياً',s:{fin:0.3,consc:0.3}},
+     {id:'d',e:'📉',t:'كثيراً ما تنتهي النقود قبل آخر الشهر',s:{fin:0.05,consc:0.1}},
+   ]},
+  {id:'q6',cat:'تحمل الضغوط',ico:'🧠',
+   text:'حين تمر بضغوط شديدة، كيف تتصرف؟',
+   opts:[
+     {id:'a',e:'🧘',t:'أبقى هادئاً وأبحث عن حلول منطقية',s:{stab:0.9,mat:0.9}},
+     {id:'b',e:'😤',t:'أتضايق لكن أتعافى بسرعة',s:{stab:0.7,mat:0.6}},
+     {id:'c',e:'😔',t:'تؤثر عليّ كثيراً لكن أتجاوزها',s:{stab:0.4,mat:0.4}},
+     {id:'d',e:'😰',t:'تسيطر عليّ وتؤثر في علاقاتي',s:{stab:0.1,mat:0.1}},
+   ]},
+  {id:'q7',cat:'العائلة والاستقلالية',ico:'🏠',
+   text:'ما الذي يمثّل لك بيت الزوجية المثالي؟',
+   opts:[
+     {id:'a',e:'🏡',t:'بيت مستقل تماماً بعيد عن الطرفين',s:{indep:0.9,fam:0.2}},
+     {id:'b',e:'🏘️',t:'مستقل لكن قريب من الأهل',s:{indep:0.6,fam:0.6}},
+     {id:'c',e:'🏢',t:'في نفس البناية مع الأهل',s:{indep:0.3,fam:0.8}},
+     {id:'d',e:'👨‍👩‍👧‍👦',t:'مع عائلتي في نفس المنزل',s:{indep:0.1,fam:0.95}},
+   ]},
+  {id:'q8',cat:'تفضيلات الزوجة',ico:'💼',
+   text:'ما رأيك في عمل الزوجة؟',
+   opts:[
+     {id:'a',e:'👏',t:'أشجعها بشدة على العمل إن أرادت',s:{ww:0.9,open:0.8,egal:0.9}},
+     {id:'b',e:'⚖️',t:'مقبول بشرط عدم إهمال البيت',s:{ww:0.6,open:0.5}},
+     {id:'c',e:'🏠',t:'أفضّل أن تكون ربة منزل',s:{ww:0.2,trad:0.8}},
+     {id:'d',e:'🚫',t:'لا أقبل بعملها نهائياً',s:{ww:0.0,trad:1.0,jeal:0.5}},
+   ]},
+  {id:'q9',cat:'العلاقات الأسرية',ico:'❤️',
+   text:'سيناريو: زوجتك وأمك دخلتا في خلاف صغير. كيف تتصرف؟',
+   hint:'لا توجد إجابة صحيحة أو خاطئة',
+   opts:[
+     {id:'a',e:'🤝',t:'أجلس الطرفين وأحاول التوفيق بهدوء',s:{cm:0.9,mat:0.9,bal:0.8}},
+     {id:'b',e:'❤️',t:'أنحاز لأمي لأنها واجبي الأول',s:{fam:1.0,mat:0.3}},
+     {id:'c',e:'💑',t:'أنحاز لزوجتي لأنها شريكة حياتي',s:{indep:0.8,mat:0.5}},
+     {id:'d',e:'🙈',t:'أتجنب التدخل وأترك الأمر يمر',s:{cm:0.2,mat:0.2}},
+   ]},
+  {id:'q10',cat:'الشراكة',ico:'🌟',
+   text:'سيناريو: زوجتك نجحت مهنياً وأصبح دخلها أكبر منك. كيف تشعر؟',
+   opts:[
+     {id:'a',e:'🎉',t:'أسعد بنجاحها وأعتز بها',s:{ego:0.95,open:0.9,egal:1.0}},
+     {id:'b',e:'🙂',t:'سعيد لكن أشعر ببعض الضغط أحياناً',s:{ego:0.6,open:0.6}},
+     {id:'c',e:'😤',t:'يضايقني ذلك ويؤثر على كرامتي',s:{ego:0.2,trad:0.8}},
+     {id:'d',e:'🚫',t:'لا أقبل هذا الوضع',s:{ego:0.0,trad:1.0}},
+   ]},
+  {id:'q11',cat:'الدعم العاطفي',ico:'💙',
+   text:'حين تكون زوجتك حزينة أو منهكة، ما طبيعة دعمك لها؟',
+   opts:[
+     {id:'a',e:'🫂',t:'أجلس معها وأستمع بصبر دون حلول فورية',s:{emp:0.95,mat:0.9}},
+     {id:'b',e:'🛠️',t:'أحاول إيجاد حل لمشكلتها فوراً',s:{emp:0.5,ps:0.9}},
+     {id:'c',e:'😄',t:'أحاول تخفيف الموضوع بالمزاح',s:{emp:0.3,mat:0.3}},
+     {id:'d',e:'😶',t:'أجد صعوبة في التعامل مع مشاعر الآخرين',s:{emp:0.1,mat:0.1}},
+   ]},
+  {id:'q12',cat:'الوعي الذاتي',ico:'🪞',
+   text:'هل تعتقد أن لديك عيوباً تحتاج العمل عليها قبل الزواج؟',
+   opts:[
+     {id:'a',e:'✅',t:'نعم، وأعرف عيوبي بدقة وأعمل على تغييرها',s:{sa:0.95,mat:1.0}},
+     {id:'b',e:'🤔',t:'نعم لكن لا أعرف تحديداً ما هي',s:{sa:0.6,mat:0.6}},
+     {id:'c',e:'😐',t:'ربما لكن لا أهتم كثيراً',s:{sa:0.2,mat:0.2}},
+     {id:'d',e:'😎',t:'لا أعتقد أن لدي عيوباً جوهرية',s:{sa:0.05,mat:0.0}},
+   ]},
+  {id:'q13',cat:'الطموح',ico:'🚀',
+   text:'كيف تصف طموحك المهني والحياتي؟',
+   opts:[
+     {id:'a',e:'🎯',t:'طامح جداً ولدي أهداف واضحة',s:{amb:0.95,consc:0.8}},
+     {id:'b',e:'📈',t:'لدي أهداف لكنني أسير بتأنٍّ',s:{amb:0.7,consc:0.6}},
+     {id:'c',e:'🏠',t:'أكتفي بالاستقرار والكفاية',s:{amb:0.4,fam:0.7}},
+     {id:'d',e:'🌊',t:'لا أفكر كثيراً في المستقبل',s:{amb:0.1,consc:0.2}},
+   ]},
+  {id:'q14',cat:'التواصل الزوجي',ico:'💬',
+   text:'سيناريو: واجهت أزمة مالية مفاجئة بعد الزواج. ماذا تفعل؟',
+   opts:[
+     {id:'a',e:'💬',t:'أخبر زوجتي فوراً وأخطط معها للحل',s:{part:0.95,mat:0.9,open:0.8}},
+     {id:'b',e:'💪',t:'أعالج المشكلة وحدي دون إزعاجها',s:{indep:0.7,part:0.3}},
+     {id:'c',e:'👨‍👩‍👦',t:'أستعين بالأهل أولاً ثم أخبرها',s:{fam:0.8,part:0.4}},
+     {id:'d',e:'😰',t:'أصاب بضغط نفسي شديد',s:{stab:0.1,mat:0.1}},
+   ]},
+  {id:'q15',cat:'دافع الزواج',ico:'💍',
+   text:'بصراحة تامة، لماذا تفكر في الزواج الآن؟',
+   hint:'لا توجد إجابة خاطئة',
+   opts:[
+     {id:'a',e:'💎',t:'نضجت نفسياً ومادياً وأريد شريكة حياة حقيقية',s:{ready:0.95,mat:0.9}},
+     {id:'b',e:'🔔',t:'وصلت سن معينة والضغط الاجتماعي موجود',s:{ready:0.4,ext:0.9}},
+     {id:'c',e:'😔',t:'أعاني من الوحدة وأريد رفيقاً',s:{ready:0.5,lonely:0.8}},
+     {id:'d',e:'🕌',t:'لأتمم نصف ديني',s:{ready:0.7,relm:0.9}},
+     {id:'e',e:'🤷',t:'لست متأكداً تماماً لماذا',s:{ready:0.2,sa:0.2}},
+   ]},
+];
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active','exit');
+  });
+  document.getElementById(id).classList.add('active');
+  currentScreen = id;
+}
+
+function goScreen(id) { showScreen(id); }
+
+function navTo(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  if (tab === 'home') {
+    document.getElementById('nav-home').classList.add('active');
+    // إذا كان لديه تقرير → اعرض النتائج، وإلا → الاستبيان
+    if (report) showScreen('results');
+    else showScreen('personal-info');
+  } else if (tab === 'results-tab') {
+    document.getElementById('nav-results-tab').classList.add('active');
+    showScreen('history');
+  } else if (tab === 'settings') {
+    document.getElementById('nav-settings').classList.add('active');
+    showScreen('settings');
+  }
+}
+
+function showBottomNav() {
+  document.getElementById('bottom-nav').classList.add('visible');
+}
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast2(msg, type='error') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type === 'success' ? 'success' : '') + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ══════════════════════════════════════════════
+//  ONBOARDING
+// ══════════════════════════════════════════════
+function handleObBtn() {
+  const slides = document.querySelectorAll('.ob-slide');
+  const dots = document.querySelectorAll('.ob-dot');
+  if (obIdx < slides.length - 1) {
+    slides[obIdx].classList.remove('active'); slides[obIdx].classList.add('prev');
+    obIdx++;
+    slides[obIdx].classList.add('active');
+    dots.forEach((d,i) => d.classList.toggle('active', i === obIdx));
+    if (obIdx === slides.length - 1)
+      document.getElementById('ob-btn').textContent = 'ابدأ الآن ←';
+  } else { skipToPersonal(); }
+}
+function skipToPersonal() { showScreen('personal-info'); showBottomNav(); }
+
+// ══════════════════════════════════════════════
+//  PERSONAL INFO
+// ══════════════════════════════════════════════
+function setBirthLabel(v) {
+  const lb = ['','الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];
+  document.getElementById('birth-val').textContent = lb[v] || 'الترتيب '+v;
+}
+
+function startQs() {
+  const age = document.getElementById('age').value;
+  const gov = document.getElementById('governorate').value;
+  const edu = document.getElementById('education').value;
+  const sec = document.getElementById('work-sector').value;
+  const inc = document.getElementById('income').value;
+  const rel = document.getElementById('religious').value;
+  if (!age||age<18||age>60){showToast2('أدخل عمراً صحيحاً (18-60)');return;}
+  if (!gov){showToast2('اختر محافظتك');return;}
+  if (!edu){showToast2('اختر مستواك التعليمي');return;}
+  if (!sec){showToast2('اختر قطاع العمل');return;}
+  if (!inc){showToast2('اختر نطاق دخلك');return;}
+  if (!rel){showToast2('اختر مستوى التزامك الديني');return;}
+  userProfile = {
+    age:+age, gov, edu,
+    occ: document.getElementById('occupation').value||'غير محدد',
+    sec, inc, rel,
+    famSize: +document.getElementById('fam-size').value,
+    birthOrder: +document.getElementById('birth-order').value,
+    hasHome: document.getElementById('has-home').checked,
+    abroad: document.getElementById('lived-abroad').checked,
+    smokes: document.getElementById('smokes').checked,
+    prevEng: document.getElementById('prev-eng').checked,
+    prefWork: document.getElementById('pref-work').checked,
+    prefParents: document.getElementById('pref-parents').checked,
+    wantsKids: document.getElementById('wants-kids').checked,
+  };
+  currentQ = 0; answers = {};
+  showScreen('questions');
+  renderQ();
+}
+
+// ══════════════════════════════════════════════
+//  QUESTIONS ENGINE
+// ══════════════════════════════════════════════
+function renderQ() {
+  const q = QS[currentQ], tot = QS.length;
+  const pct = Math.round(((currentQ+1)/tot)*100);
+  document.getElementById('q-cnt').textContent = `السؤال ${currentQ+1} من ${tot}`;
+  document.getElementById('q-pct-lbl').textContent = pct+'%';
+  document.getElementById('q-prog').style.width = pct+'%';
+  document.getElementById('q-cat').innerHTML = q.ico+' '+q.cat;
+  document.getElementById('btn-back').style.display = currentQ===0?'none':'';
+  const fwd = document.getElementById('btn-fwd');
+  const ans = answers[q.id];
+  fwd.disabled = !ans;
+  fwd.textContent = currentQ===tot-1 ? 'إنهاء وتحليل ✨' : 'التالي';
+  fwd.className = 'btn-fwd'+(currentQ===tot-1?' finish':'');
+
+  let h = `<div class="q-text">${q.text}</div>`;
+  if (q.hint) h += `<div class="q-hint">${q.hint}</div>`;
+  h += '<div class="options">';
+  q.opts.forEach(o => {
+    const sel = ans===o.id?'selected':'';
+    h += `<div class="option ${sel}" onclick="pickOpt('${q.id}','${o.id}',this)">
+      <div class="opt-emoji">${o.e}</div>
+      <div class="opt-text">${o.t}</div>
+      <div class="opt-chk"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+    </div>`;
+  });
+  h += '</div>';
+  document.getElementById('q-body').innerHTML = h;
+  document.getElementById('q-body').scrollTop = 0;
+}
+
+function pickOpt(qId, optId, el) {
+  answers[qId] = optId;
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('btn-fwd').disabled = false;
+  if (currentQ < QS.length-1) setTimeout(nextQ, 380);
+}
+
+function nextQ() {
+  if (!answers[QS[currentQ].id]){showToast2('الرجاء اختيار إجابة');return;}
+  if (currentQ < QS.length-1){currentQ++;renderQ();}
+  else doAnalysis();
+}
+function prevQ() {if(currentQ>0){currentQ--;renderQ();}}
+
+// ══════════════════════════════════════════════
+//  ANALYSIS
+// ══════════════════════════════════════════════
+function doAnalysis() {
+  showScreen('analyzing');
+  // حساب الأبعاد
+  const raw={}, cnt={};
+  QS.forEach(q => {
+    const aid = answers[q.id]; if(!aid) return;
+    const opt = q.opts.find(o=>o.id===aid); if(!opt) return;
+    Object.entries(opt.s).forEach(([d,v])=>{raw[d]=(raw[d]||0)+v;cnt[d]=(cnt[d]||0)+1;});
+  });
+  scores={};
+  Object.keys(raw).forEach(d => scores[d]=Math.min(1,raw[d]/cnt[d]));
+  if(userProfile.hasHome) scores.stab=Math.min(1,(scores.stab||.5)+.08);
+  if(userProfile.abroad) scores.open=Math.min(1,(scores.open||.5)+.08);
+  if(!userProfile.smokes) scores.consc=Math.min(1,(scores.consc||.5)+.04);
+
+  ['as1','as2','as3','as4','as5'].forEach((id,i)=>
+    setTimeout(()=>document.getElementById(id).classList.add('done'),(i+1)*600)
+  );
+  setTimeout(()=>{report=buildReport();saveReport();showResults();},4200);
+}
+
+function buildReport() {
+  const s=scores, u=userProfile;
+  const ready = (
+    (s.mat||.5)*.25+(s.stab||.5)*.20+(s.fin||.5)*.20+
+    (s.resp||.5)*.15+(s.sa||.5)*.10+(s.cm||.5)*.10
+  );
+  const indicators = [
+    {n:'الاستقرار النفسي',e:'🧠',v:s.stab||.5,note:(s.stab||.5)>.7?'مستوى ممتاز':'قابل للتطوير'},
+    {n:'النضج العاطفي',e:'❤️',v:s.mat||.5,note:(s.mat||.5)>.7?'نضج واضح':'يحتاج وعياً أعمق'},
+    {n:'الاستقرار المالي',e:'💰',v:s.fin||.5,note:(s.fin||.5)>.7?'ممتاز':'يحتاج تخطيطاً'},
+    {n:'المسؤولية',e:'⚡',v:s.resp||.5,note:(s.resp||.5)>.7?'مؤشر إيجابي جداً':'يحتاج تعزيزاً'},
+    {n:'التواصل',e:'💬',v:s.cm||.5,note:(s.cm||.5)>.7?'أساس جيد للحوار':'العمل على هذا مهم'},
+    {n:'الانفتاح',e:'🌐',v:s.open||.5,note:(s.open||.5)>.7?'منفتح ومرن':'معتدل'},
+  ];
+  const isTrad=(s.trad||0)>.6, isOpen=(s.open||0)>.6, isJeal=(s.jeal||0)>.6;
+  const pp = {
+    age:`${Math.max(18,u.age-8)} - ${u.age-1} سنة`,
+    edu: u.edu.includes('عليا')?'بكالوريوس على الأقل': u.edu==='بكالوريوس'?'بكالوريوس أو دبلوم':'لا يشترط تعليم عالٍ',
+    work: u.prefWork?'الزوجة الموظفة مناسبة لك':'ربة منزل متفرغة تناسب قيمك',
+    pers: isTrad?'شخصية محافظة هادئة تحترم الموروث': isOpen?'شخصية منفتحة واثقة تشاركية':'شخصية متوازنة تجمع المحافظة والانفتاح',
+    res: u.prefParents?'عائلة تقبل السكن مع الأهل': u.hasHome?'من تقبل الاستقلالية والحياة المستقلة':'ابدأ بالتخطيط للسكن المستقل قبل الزواج',
+    desc:`بناءً على شخصيتك وقيمك، تناسبك شريكة من بيئة ${u.gov} أو ذات نمط ثقافي مقارب. ${isJeal?'الابتعاد عن بيئات العمل المختلطة سيريحك نفسياً.':''} ${(s.emp||0)>.7?'قدرتك على الاستماع العاطفي ستجذب شريكة تقدّر الدعم العاطفي.':''}`
+  };
+  const str=[];
+  if((s.mat||0)>.7)str.push('نضج عاطفي واضح — ركيزة أساسية للاستقرار الزوجي');
+  if((s.resp||0)>.7)str.push('حس عالٍ بالمسؤولية من أهم صفات الزوج الناجح');
+  if((s.sa||0)>.6)str.push('وعي ذاتي جيد يساعدك على النمو المستمر');
+  if((s.fin||0)>.7)str.push('إدارة مالية ناضجة — أساس لاستقرار الأسرة');
+  if((s.emp||0)>.7)str.push('قدرة على التعاطف والاستماع — صفة نادرة وثمينة');
+  if(str.length<3)str.push('إقدامك على الاستبيان دليل على رغبة حقيقية في التطور');
+  const dev=[];
+  if((s.cm||0)<.6)dev.push('العمل على مهارات التواصل وإدارة الخلاف بهدوء');
+  if((s.fin||0)<.6)dev.push('بناء خطة مالية واضحة (ادخار + سكن) قبل الزواج');
+  if((s.jeal||0)>.6)dev.push('العمل على الثقة وتخفيف الغيرة — ستصبح ضغطاً مستقبلاً');
+  if((s.stab||0)<.5)dev.push('تطوير الاستقرار النفسي عبر التأمل أو الاستشارة');
+  if(dev.length===0)dev.push('الحفاظ على مستواك والاستمرار في النمو');
+  const warns=[];
+  if((s.jeal||0)>.7)warns.push('مستوى غيرة مرتفع — قد يتحول لضغط نفسي على الزوجة');
+  if((s.mat||0)<.4)warns.push('النضج العاطفي يحتاج تطويراً جدياً قبل الإقدام على الزواج');
+  if((s.fin||0)<.3)warns.push('الوضع المالي يحتاج استقراراً أكبر قبل تحمل مسؤولية أسرة');
+  if((s.ext||0)>.7)warns.push('الزواج بسبب الضغط الاجتماعي فقط قرار خطير — تأكد من جاهزيتك');
+  const govC = getGovCompat(u.gov, s);
+  const risks=[];
+  if((s.cm||0)<.5)risks.push('تراكم الخلافات الصغيرة بدون حلول — يؤدي لانفجار مؤجل');
+  if((s.jeal||0)>.6)risks.push('الغيرة المفرطة تضيّق حرية الزوجة وتقود لتوتر مستمر');
+  if((s.fin||0)<.5)risks.push('غياب التخطيط المالي — المشاكل المادية سبب رئيسي للطلاق');
+  if((s.part||0)<.4)risks.push('التعامل مع الزواج كعلاقة تراتبية لا شراكة حقيقية');
+  if(risks.length<2)risks.push('عدم مناقشة التوقعات المشتركة قبل الارتباط بصراحة كافية');
+  const adv=[
+    'خصص وقتاً للتعرف على طريقة تفكير الشريكة في القرارات الحياتية الجوهرية قبل الخطوبة',
+    'ناقش مسألة السكن والمال والأطفال بصراحة كاملة — لا تفترض التوافق',
+    (s.jeal||0)>.5?'اعمل على بناء الثقة بالنفس — لأن الثقة بالذات تقلل الغيرة تلقائياً':'حافظ على انفتاحك وثقتك في العلاقة',
+    'استشر متخصصاً أو مرشداً أسرياً إن وجدت تحفظات جدية قبل الارتباط',
+  ];
+  return {ready, indicators, pp, str, dev, warns, govC, risks, adv, gov:u.gov, date:new Date().toLocaleDateString('ar-IQ')};
+}
+
+function getGovCompat(hg, s) {
+  const isTrad=(s.trad||0)>.5, isOpen=(s.open||0)>.6;
+  const all={
+    'بغداد':{v:isOpen?.85:.7,r:'تنوع ثقافي وخيارات أوسع'},
+    'البصرة':{v:.75,r:'منفتح اجتماعياً نسبياً'},
+    'النجف':{v:isTrad?.85:.65,r:'قيم أسرية متجذرة'},
+    'كربلاء':{v:isTrad?.8:.65,r:'التزام ديني واجتماعي'},
+    'أربيل':{v:isOpen?.78:.55,r:'انفتاح وتنوع ثقافي'},
+    'نينوى':{v:.7,r:'قيم عائلية محافظة'},
+    'بابل':{v:.75,r:'بيئة عائلية دافئة'},
+    'ذي قار':{v:isTrad?.8:.65,r:'روابط عائلية قوية'},
+  };
+  const res=[];
+  if(all[hg]) res.push({n:hg+' (محافظتك)',...all[hg]});
+  Object.entries(all).filter(([k])=>k!==hg).sort(([,a],[,b])=>b.v-a.v).slice(0,3).forEach(([n,d])=>res.push({n,...d}));
+  return res;
+}
+
+// ══════════════════════════════════════════════
+//  SAVE & LOAD REPORTS
+// ══════════════════════════════════════════════
+function saveReport() {
+  if (!report) return;
+  const entry = {
+    id: Date.now(),
+    date: report.date,
+    gov: report.gov,
+    pct: Math.round(report.ready*100),
+    data: report
+  };
+  savedReports.unshift(entry);
+  if (savedReports.length > 10) savedReports = savedReports.slice(0,10);
+  localStorage.setItem('naseebi_reports', JSON.stringify(savedReports));
+}
+
+function loadHistory() {
+  const body = document.getElementById('history-body');
+  if (savedReports.length === 0) {
+    body.innerHTML = `<div class="history-empty"><div class="he-icon">📊</div><div class="he-title">لا توجد تقارير بعد</div><div class="he-sub">أكمل الاستبيان لتظهر تقاريرك هنا</div></div>`;
+    return;
+  }
+  body.innerHTML = savedReports.map(r => {
+    const c = r.pct>=75?'#2E7D32':r.pct>=50?'#C8A96E':'#C62828';
+    return `<div class="hist-card" onclick="loadReportById(${r.id})">
+      <div class="hist-card-hd">
+        <div class="hist-date">${r.date}</div>
+        <div class="hist-pct" style="background:${c}18;color:${c}">${r.pct}%</div>
+      </div>
+      <div class="hist-name">تقرير زواجي</div>
+      <div class="hist-gov">📍 ${r.gov}</div>
+    </div>`;
+  }).join('');
+}
+
+function loadReportById(id) {
+  const entry = savedReports.find(r=>r.id===id);
+  if (!entry) return;
+  report = entry.data;
+  showResults();
+  showScreen('results');
+}
+
+// ══════════════════════════════════════════════
+//  RESULTS RENDERING
+// ══════════════════════════════════════════════
+function showResults() {
+  showScreen('results');
+  document.getElementById('res-sub').textContent = `استناداً إلى ${QS.length} سؤالاً • ${report.date}`;
+  const r = report;
+  const pct = Math.round(r.ready*100);
+  const col = pct>=75?'#2E7D32':pct>=50?'#C8A96E':'#C62828';
+  const lbl = pct>=80?'جاهز بامتياز':pct>=65?'جاهز بشكل جيد':pct>=50?'جاهز جزئياً':'يحتاج تطوير';
+  const rdesc = pct>=75?'أنت في مستوى جيد جداً من الجاهزية الزوجية.':pct>=50?'أنت في منتصف الطريق — بعض الجوانب جاهزة وبعضها يحتاج تطويراً.':'تحتاج عملاً جاداً على بعض الجوانب قبل الزواج. هذه فرصة للتطور.';
+  const circ = 2*Math.PI*60;
+  const off = circ*(1-r.ready);
+  let h = '';
+  // Gauge
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:var(--gold)"></div>مؤشر الجاهزية</div>
+  <div class="gauge-wrap">
+    <div class="gauge-circle">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border2)" stroke-width="10"/>
+        <circle cx="70" cy="70" r="60" fill="none" stroke="${col}" stroke-width="10"
+          stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+          stroke-linecap="round" style="transition:stroke-dashoffset 1.5s ease"/>
+      </svg>
+      <div class="gauge-inner">
+        <div class="gauge-pct" style="color:${col}">${pct}%</div>
+        <div class="gauge-lbl" style="color:${col}">${lbl}</div>
+      </div>
+    </div>
+    <div class="gauge-desc">${rdesc}</div>
+  </div></div>`;
+  // Partner Profile
+  const p=r.pp;
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:var(--gold)"></div>شريكة الحياة الأنسب</div>
+  <div class="p-row"><div class="p-ico">🎂</div><div class="p-col"><div class="p-lbl">الفئة العمرية</div><div class="p-val">${p.age}</div></div></div>
+  <div class="p-row"><div class="p-ico">🎓</div><div class="p-col"><div class="p-lbl">التعليم</div><div class="p-val">${p.edu}</div></div></div>
+  <div class="p-row"><div class="p-ico">💼</div><div class="p-col"><div class="p-lbl">العمل</div><div class="p-val">${p.work}</div></div></div>
+  <div class="p-row"><div class="p-ico">💎</div><div class="p-col"><div class="p-lbl">الشخصية</div><div class="p-val">${p.pers}</div></div></div>
+  <div class="p-row"><div class="p-ico">🏠</div><div class="p-col"><div class="p-lbl">السكن</div><div class="p-val">${p.res}</div></div></div>
+  <div class="p-desc">${p.desc}</div></div>`;
+  // Indicators
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:var(--navy)"></div>مؤشرات التوافق</div>`;
+  r.indicators.forEach(ind=>{
+    const c=ind.v>=.7?'#2E7D32':ind.v>=.45?'#C8A96E':'#C62828';
+    h+=`<div class="ind-row">
+      <div class="ind-hd"><div class="ind-nm">${ind.e} ${ind.n}</div><div class="ind-pct" style="color:${c}">${Math.round(ind.v*100)}%</div></div>
+      <div class="ind-bg"><div class="ind-fill" style="width:${ind.v*100}%;background:${c}"></div></div>
+      <div class="ind-note">${ind.note}</div></div>`;
+  });
+  h+=`</div>`;
+  // Strengths
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:#2E7D32"></div>نقاط قوتك</div><div class="blist">`;
+  r.str.forEach(s2=>h+=`<div class="bitem"><div class="bemo">✅</div><div class="btxt">${s2}</div></div>`);
+  h+=`</div></div>`;
+  // Dev areas
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:#E65100"></div>جوانب تحتاج تطويراً</div><div class="blist">`;
+  r.dev.forEach(d=>h+=`<div class="bitem"><div class="bemo">🔧</div><div class="btxt">${d}</div></div>`);
+  h+=`</div></div>`;
+  // Warnings
+  if(r.warns.length>0){
+    h+=`<div class="warn-card"><div class="warn-hd">⚠️ تحذيرات مهمة</div><div class="blist">`;
+    r.warns.forEach(w=>h+=`<div class="bitem"><div class="bemo">⚠️</div><div class="btxt">${w}</div></div>`);
+    h+=`</div></div>`;
+  }
+  // Governorate
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:var(--teal)"></div>أنماط ثقافية متقاربة</div>`;
+  r.govC.forEach(g=>{
+    const c=g.v>=.75?'#2E7D32':'#C8A96E';
+    h+=`<div class="gov-row">
+      <div class="gov-nm">${g.n}</div>
+      <div class="gov-wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="gov-bar-bg" style="flex:1"><div class="gov-bar" style="width:${g.v*100}%;background:${c}"></div></div>
+          <span style="font-size:12px;font-weight:700;color:${c};width:32px">${Math.round(g.v*100)}%</span>
+        </div>
+        <div class="gov-pct-lbl">${g.r}</div>
+      </div></div>`;
+  });
+  h+=`</div>`;
+  // Risks
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:#C62828"></div>أسباب فشل محتملة إن لم تنتبه</div><div class="blist">`;
+  r.risks.forEach(rk=>h+=`<div class="bitem"><div class="bemo">🔴</div><div class="btxt">${rk}</div></div>`);
+  h+=`</div></div>`;
+  // Advice
+  h+=`<div class="r-card"><div class="r-card-title"><div class="rc-bar" style="background:var(--teal)"></div>نصائح قبل الزواج</div><div class="blist">`;
+  r.adv.forEach(a=>h+=`<div class="bitem"><div class="bemo">💡</div><div class="btxt">${a}</div></div>`);
+  h+=`</div></div>`;
+  // Disclaimer + Retake
+  h+=`<div class="disclaimer">* هذا التقرير مؤشر استرشادي يستند إلى إجاباتك فقط، وليس حكماً قاطعاً أو ضماناً لنجاح أي علاقة. قرار الزواج مسؤوليتك الكاملة وتستلزم مشاورة الأهل والمختصين.</div>
+  <button class="btn btn-outline" style="width:100%;padding:13px;margin-top:6px" onclick="restartApp()">🔄 إعادة الاختبار</button>`;
+  document.getElementById('res-body').innerHTML = h;
+  loadHistory();
+}
+
+// ══════════════════════════════════════════════
+//  ACCOUNT
+// ══════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('form-login').style.display = tab==='login'?'flex':'none';
+  document.getElementById('form-register').style.display = tab==='register'?'flex':'none';
+  document.getElementById('form-login').style.flexDirection = 'column';
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  if (!email||!pass){showToast2('أدخل البريد وكلمة المرور');return;}
+  // محاكاة تسجيل دخول محلي
+  const u = {name: email.split('@')[0], email, id: Date.now()};
+  currentUser = u;
+  localStorage.setItem('naseebi_user', JSON.stringify(u));
+  showLoggedIn(u);
+  showToast2('تم تسجيل الدخول بنجاح ✓','success');
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  const pass = document.getElementById('reg-pass').value;
+  if (!name||!email||!pass){showToast2('أكمل جميع الحقول');return;}
+  if (pass.length<8){showToast2('كلمة المرور 8 أحرف على الأقل');return;}
+  const u = {name, email, id: Date.now()};
+  currentUser = u;
+  localStorage.setItem('naseebi_user', JSON.stringify(u));
+  showLoggedIn(u);
+  showToast2('تم إنشاء الحساب بنجاح ✓','success');
+}
+
+function showLoggedIn(u) {
+  document.getElementById('auth-section').style.display = 'none';
+  document.getElementById('logged-section').style.display = 'block';
+  document.getElementById('user-name').textContent = u.name;
+  document.getElementById('user-email-disp').textContent = u.email;
+  document.getElementById('user-avatar').textContent = u.name[0]?.toUpperCase() || '👤';
+}
+
+function continueGuest() {
+  showToast2('تابع بدون حساب ✓','success');
+  setTimeout(()=>goScreen('settings'),800);
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('naseebi_user');
+  document.getElementById('auth-section').style.display = 'block';
+  document.getElementById('logged-section').style.display = 'none';
+  showToast2('تم تسجيل الخروج','success');
+}
+
+function confirmDeleteAccount() {
+  if (confirm('هل أنت متأكد من حذف حسابك وجميع بياناتك؟ لا يمكن التراجع عن هذا الإجراء.')) {
+    currentUser = null;
+    savedReports = [];
+    localStorage.clear();
+    document.getElementById('auth-section').style.display = 'block';
+    document.getElementById('logged-section').style.display = 'none';
+    showToast2('تم حذف الحساب وجميع البيانات','success');
+  }
+}
+
+// ══════════════════════════════════════════════
+//  PRIVACY & TERMS
+// ══════════════════════════════════════════════
+function showPrivacy() {
+  alert('سياسة الخصوصية\n\n• لا نجمع بيانات شخصية تُعرّف بهويتك\n• بياناتك محفوظة محلياً على جهازك فقط\n• لا نشارك معلوماتك مع أي طرف ثالث\n• يمكنك حذف بياناتك في أي وقت من صفحة الحساب\n• للتواصل: privacy@naseebi.app');
+}
+function showTerms() {
+  alert('شروط الاستخدام\n\n• التطبيق أداة استرشادية فقط وليس بديلاً عن الاستشارة المتخصصة\n• النتائج تمثل مؤشرات وليست أحكاماً قاطعة\n• المستخدم مسؤول كلياً عن قراراته الشخصية\n• يُحظر استخدام التطبيق من قِبل من هم دون 18 عاماً\n• للتواصل: legal@naseebi.app');
+}
+
+// ══════════════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════════════
+function toggleFaq(el) { el.classList.toggle('open'); }
+
+function restartApp() {
+  answers={}; userProfile={}; scores={}; report=null; currentQ=0;
+  showScreen('personal-info');
+  document.getElementById('nav-home').classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (!t.id.includes('home')) t.classList.remove('active');
+  });
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  // فحص الإنترنت
+  function checkNet() {
+    document.getElementById('no-net').classList.toggle('show', !navigator.onLine);
+  }
+  window.addEventListener('online', checkNet);
+  window.addEventListener('offline', checkNet);
+  checkNet();
+
+  // تحقق من حالة تسجيل الدخول
+  if (currentUser) {
+    setTimeout(() => showLoggedIn(currentUser), 100);
+  }
+
+  // الانتقال من splash
+  setTimeout(() => {
+    showScreen('onboarding');
+    showBottomNav();
+    document.getElementById('nav-home').classList.add('active');
+  }, 2800);
+});
+</script>
+</body>
+</html>
